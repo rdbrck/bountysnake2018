@@ -19,7 +19,7 @@
 
 -- Lua optimization: any functions from another module called more than once
 -- are faster if you create a local reference to that function.
-local DEBUG = ngx.DEBUG
+local DEBUG = ngx.ERR
 local log = ngx.log
 local mdist = util.mdist
 local neighbours = algorithm.neighbours
@@ -37,23 +37,54 @@ math.randomseed( os.time() )
 -- Get the POST request and decode the JSON
 local request_body = ngx.var.request_body
 log( DEBUG, 'Got request data: ' .. request_body )
-local gameState = cjson.decode( request_body )
+local gameState2019 = cjson.decode( request_body )
+local gameState = {}
+
+if (gameState2019['food'] == nil) then	
+	gameState['height'] = gameState2019['board']['height']
+	gameState['width'] = gameState2019['board']['width']
+	gameState['turn'] = gameState2019['turn']
+	gameState['id'] = gameState2019['game']
+	
+	gameState['you'] = {}
+	gameState['you']['id'] = gameState2019['you']['id']
+	gameState['you']['health'] = gameState2019['you']['health']
+	gameState['you']['name'] = gameState2019['you']['name']
+	gameState['you']['body'] = {}
+	gameState['you']['body']['data'] = gameState2019['you']['body']
+		
+	log(DEBUG, "got here")
+	gameState['food'] = {}
+	gameState['food']['data'] = gameState2019['board']['food']
+	
+	gameState['snakes'] = {}
+	gameState['snakes']['data'] = {}
+	for i = 1, #gameState2019['board']['snakes'] do
+		gameState['snakes']['data'][i] = {}
+		gameState['snakes']['data'][i]['id'] = gameState2019['board']['snakes'][i]['id']
+		gameState['snakes']['data'][i]['name'] = gameState2019['board']['snakes'][i]['name']
+		gameState['snakes']['data'][i]['health'] = gameState2019['board']['snakes'][i]['health']
+		gameState['snakes']['data'][i]['body'] = {}
+		gameState['snakes']['data'][i]['body']['data'] = gameState2019['board']['snakes'][i]['body']
+	end
+else
+	gameState = gameState2019
+end
 
 -- Convert to 1-based indexing
-log( DEBUG, 'Converting Coordinates' )
-for i = 1, #gameState[ 'food' ][ 'data' ] do
-    gameState[ 'food' ][ 'data' ][ i ][ 'x' ] = gameState[ 'food' ][ 'data' ][ i ][ 'x' ] + 1
-    gameState[ 'food' ][ 'data' ][ i ][ 'y' ] = gameState[ 'food' ][ 'data' ][ i ][ 'y' ] + 1
+for i = 1, #gameState['food']['data'] do
+    gameState[ 'food' ][ 'data' ][ i ][ 'x' ] = gameState['food'][ 'data' ][ i ][ 'x' ] + 1
+    gameState[ 'food' ][ 'data' ][ i ][ 'y' ] = gameState['food'][ 'data' ][ i ][ 'y' ] + 1
 end
 for i = 1, #gameState[ 'snakes' ][ 'data' ] do
     for j = 1, #gameState[ 'snakes' ][ 'data' ][ i ][ 'body' ][ 'data' ] do
-        gameState[ 'snakes' ][ 'data' ][ i ][ 'body' ][ 'data' ][ j ][ 'x' ] = gameState[ 'snakes' ][ 'data' ][ i ][ 'body' ][ 'data' ][ j ][ 'x' ] + 1
-        gameState[ 'snakes' ][ 'data' ][ i ][ 'body' ][ 'data' ][ j ][ 'y' ] = gameState[ 'snakes' ][ 'data' ][ i ][ 'body' ][ 'data' ][ j ][ 'y' ] + 1
+        gameState[ 'snakes' ][ 'data' ][ i ][ 'body' ][ 'data' ][ j ][ 'x' ] = gameState['snakes'][ 'data' ][ i ][ 'body' ]['data'][ j ][ 'x' ] + 1
+        gameState[ 'snakes' ][ 'data' ][ i ][ 'body' ][ 'data' ][ j ][ 'y' ] = gameState['snakes'][ 'data' ][ i ][ 'body' ]['data'][ j ][ 'y' ] + 1
     end
 end
 for i = 1, #gameState[ 'you' ][ 'body' ][ 'data' ] do
-    gameState[ 'you' ][ 'body' ][ 'data' ][ i ][ 'x' ] = gameState[ 'you' ][ 'body' ][ 'data' ][ i ][ 'x' ] + 1
-    gameState[ 'you' ][ 'body' ][ 'data' ][ i ][ 'y' ] = gameState[ 'you' ][ 'body' ][ 'data' ][ i ][ 'y' ] + 1
+    gameState[ 'you' ][ 'body' ][ 'data' ][ i ][ 'x' ] = gameState[ 'you' ][ 'body' ]['data'][ i ][ 'x' ] + 1
+    gameState[ 'you' ][ 'body' ][ 'data' ][ i ][ 'y' ] = gameState[ 'you' ][ 'body' ]['data'][ i ][ 'y' ] + 1
 end
 
 log( DEBUG, 'Building World Map' )

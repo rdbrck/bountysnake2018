@@ -26,7 +26,7 @@ local function deepcopy(t) -- deep-copy a table
     local target = {}
     for k, v in pairs(t) do
         if type(v) == "table" then
-            target[k] = deepcopy(v)
+	    target[k] = deepcopy(v)
         else
             target[k] = v
         end
