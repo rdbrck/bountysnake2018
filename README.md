@@ -47,15 +47,14 @@ A blog post that talks about the strategy in depth is here: https://rdbrck.com/2
 ## How to Run
 1. Download and install [OpenResty](http://openresty.org/).
 2. Using LuaRocks, install `cjson` which is a mandatory dependency: `/usr/share/luajit/bin/luarocks install cjson`
-3. Symlink `config/http.conf` into the `/etc/nginx/conf.d` directory.
-4. Symlink `config/server.dev.conf` into the `/etc/nginx/sites-enabled` directory (and remove anything else in that directory).
-5. Restart the nginx process and give the snake a try!
+3. Symlink `config/server.dev.conf` into the `/etc/nginx/sites-enabled` directory (and remove anything else in that directory).
+4. Restart the nginx process and give the snake a try!
 
 Or if that sounds like too much work, you can use [Mojave](https://github.com/smallsco/mojave) which contains a built-in copy of Son of Robosnake, no assembly required.
 
 
 ## Configuration
-Configuration is done in `/config/http.conf`. 
+Configuration is done in `/config/server.prod.conf`. 
 
 * `MAX_RECURSION_DEPTH` - this affects how far the alpha-beta pruning algorithm will look ahead. Increasing this will make SoR much smarter, but response times will be much longer.
 * `HUNGER_HEALTH` - when SoR's health dips to this value (or below) it will start looking for food.
